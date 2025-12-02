@@ -306,13 +306,8 @@ label {
 
 .results-table {
   width: 100%;
-  max-width: 100%;
   border-collapse: separate;
   border-spacing: 0 0.5rem;
-  table-layout: auto;
-  display: block;
-  overflow-x: auto;
-  white-space: nowrap;
 }
 
 .results-table th {
@@ -330,6 +325,7 @@ label {
   padding: 1rem;
   border-top: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
 }
 
 .results-table tr td:first-child {
