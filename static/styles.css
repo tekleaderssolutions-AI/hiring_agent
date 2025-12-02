@@ -167,7 +167,8 @@ h1 {
   padding: 2.5rem;
   border: 1px solid rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(10px);
-  overflow: hidden;
+  overflow: hidden !important;
+  max-width: 100% !important;
 }
 
 .card-header {
@@ -299,14 +300,14 @@ label {
 
 /* Tables */
 .table-responsive {
-  overflow-x: auto;
-  max-width: 100%;
+  overflow-x: auto !important;
+  max-width: 100% !important;
   -webkit-overflow-scrolling: touch;
 }
 
 .calendar-placeholder {
-  max-width: 100%;
-  overflow: hidden;
+  max-width: 100% !important;
+  overflow: hidden !important;
 }
 
 .results-table {
