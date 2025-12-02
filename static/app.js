@@ -93,7 +93,7 @@ const app = {
   checkInterviewStatus: async () => {
     const tbody = document.getElementById('interview-status-body');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Loading status...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Loading status...</td></tr>';
 
     try {
       const res = await fetch('/interviews/status');
@@ -101,7 +101,7 @@ const app = {
 
       tbody.innerHTML = '';
       if (!data.interviews || data.interviews.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">No interviews scheduled yet</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No interviews scheduled yet</td></tr>';
         return;
       }
 
