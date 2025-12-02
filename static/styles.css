@@ -580,6 +580,7 @@ label {
 .hidden {
   display: none !important;
 }
+
 /* Override for compact table */
 .results-table td {
   padding: 0.5rem 0.75rem !important;
@@ -620,21 +621,13 @@ label {
   box-sizing: border-box;
 }
 
-/* Increase font size and make first column sticky */
+/* Increase font size for readability */
 .interview-table td {
   font-size: 1rem !important;
 }
 
-.interview-table th:first-child,
-.interview-table td:first-child {
-  position: sticky;
-  left: 0;
-  background: white;
-  z-index: 10;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.05);
-}
-
-.interview-table th:first-child {
-  background: #f9fafb;
-  z-index: 20;
+.interview-table th:nth-child(1),
+.interview-table td:nth-child(1) {
+  min-width: 180px;
+  /* Ensure candidate name has space */
 }
