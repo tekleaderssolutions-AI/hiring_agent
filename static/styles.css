@@ -615,3 +615,7 @@ label {
   vertical-align: middle;
   color: #374151;
 }
+
+* {
+  box-sizing: border-box;
+}
