@@ -109,8 +109,14 @@ const app = {
         const statusClass = interview.status === 'confirmed' ? 'score-high' :
           interview.status === 'pending' ? 'score-medium' : 'score-low';
 
-        const meetingLink = interview.event_link ? `<a href="${interview.event_link}" target="_blank">Join Meeting</a>` : 'Pending';
-        const calendarEvent = interview.event_link ? `<a href="${interview.event_link}" target="_blank">View Event</a>` : 'Pending';
+        // Create actions cell with both Meeting and Calendar links
+        let actionsHTML = 'Pending';
+        if (interview.event_link) {
+          actionsHTML = `
+            <a href="${interview.event_link}" target="_blank" style="margin-right: 8px;">📅 Calendar</a>
+            <a href="${interview.event_link}" target="_blank">🎥 Meet</a>
+          `;
+        }
 
         // Format time if available
         let timeDisplay = 'TBD';
@@ -125,12 +131,10 @@ const app = {
             <td><strong>${interview.candidate_name}</strong></td>
             <td>${interview.candidate_email}</td>
             <td>${interview.jd_title}</td>
-            <td>${interview.jd_title}</td>
             <td>${new Date(interview.interview_date).toLocaleDateString()}</td>
             <td>${timeDisplay}</td>
             <td><span class="score-badge ${statusClass}">${interview.status}</span></td>
-            <td>${meetingLink}</td>
-            <td>${calendarEvent}</td>
+            <td>${actionsHTML}</td>
             <td>${interview.interviewer_email || 'N/A'}</td>
           </tr>
         `;
@@ -138,7 +142,7 @@ const app = {
       });
 
     } catch (err) {
-      tbody.innerHTML = `<tr><td colspan="10" style="color: red; text-align:center;">Error: ${err.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="color: red; text-align:center;">Error: ${err.message}</td></tr>`;
     }
   },
 
