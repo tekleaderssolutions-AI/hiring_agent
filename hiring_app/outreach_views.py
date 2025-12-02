@@ -1,7 +1,10 @@
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from db import get_connection
+
 @csrf_exempt
 def get_outreach_logs(request):
     """Get all candidate outreach logs with email status"""
-    from db import get_connection
     
     conn = get_connection()
     try:
