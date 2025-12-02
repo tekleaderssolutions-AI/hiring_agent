@@ -605,3 +605,13 @@ label {
   padding: 0.75rem 1rem !important;
   font-size: 0.95rem !important;
 }
+
+/* Interview Table Styles */
+.interview-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+  background: white;
+  vertical-align: middle;
+  color: #374151;
+}
