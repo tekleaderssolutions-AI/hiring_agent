@@ -1,24 +1,43 @@
 const app = {
   // Navigation Logic
+  showLanding: () => {
+    document.getElementById('landing-page').classList.remove('hidden');
+    document.getElementById('admin-portal').classList.add('hidden');
+    document.getElementById('recruiter-portal').classList.add('hidden');
+  },
+
+  showAdminPortal: () => {
+    document.getElementById('landing-page').classList.add('hidden');
+    document.getElementById('admin-portal').classList.remove('hidden');
+    document.getElementById('recruiter-portal').classList.add('hidden');
+  },
+
+  showRecruiterPortal: () => {
+    document.getElementById('landing-page').classList.add('hidden');
+    document.getElementById('admin-portal').classList.add('hidden');
+    document.getElementById('recruiter-portal').classList.remove('hidden');
+    // Default to first step
+    app.showStep('step-jd');
+  },
+
   showStep: (stepId) => {
     // 1. Hide all step contents
     document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
-    
+
     // 2. Show selected step content
     document.getElementById(stepId).classList.remove('hidden');
 
     // 3. Update active state on nodes
     document.querySelectorAll('.step-node').forEach(el => el.classList.remove('active'));
-    
+
     // Map step IDs to node IDs
     const nodeMap = {
-      'step-talent': 'node-talent',
       'step-jd': 'node-jd',
       'step-analysis': 'node-analysis',
       'step-outreach': 'node-outreach',
       'step-interview': 'node-interview'
     };
-    
+
     const nodeId = nodeMap[stepId];
     if (nodeId) {
       document.getElementById(nodeId).classList.add('active');
@@ -54,7 +73,7 @@ const app = {
       const resultsArea = document.getElementById('results-area');
       const tbody = document.getElementById('results-body');
       const noResults = document.getElementById('no-results-placeholder');
-      
+
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading analysis...</td></tr>';
       resultsArea.classList.remove('hidden');
       noResults.classList.add('hidden');
@@ -103,7 +122,7 @@ const app = {
           // Update status column to "Sending..."
           candidateIds.forEach(id => {
             const statusCell = document.getElementById(`status-${id}`);
-            if(statusCell) statusCell.innerText = 'Sending Email...';
+            if (statusCell) statusCell.innerText = 'Sending Email...';
           });
 
           await sendEmailsToCandidates(jdId, candidateIds);
@@ -131,20 +150,20 @@ const app = {
 
         // Update status in the table
         candidateIds.forEach(id => {
-           const statusCell = document.getElementById(`status-${id}`);
-           if(statusCell) {
-             statusCell.innerHTML = '<span style="color: green">Email Sent ✅</span>';
-           }
+          const statusCell = document.getElementById(`status-${id}`);
+          if (statusCell) {
+            statusCell.innerHTML = '<span style="color: green">Email Sent ✅</span>';
+          }
         });
 
       } catch (err) {
         console.error("Email error:", err);
         // Update status to error
         candidateIds.forEach(id => {
-           const statusCell = document.getElementById(`status-${id}`);
-           if(statusCell) {
-             statusCell.innerHTML = '<span style="color: red">Failed ❌</span>';
-           }
+          const statusCell = document.getElementById(`status-${id}`);
+          if (statusCell) {
+            statusCell.innerHTML = '<span style="color: red">Failed ❌</span>';
+          }
         });
       }
     };
@@ -168,13 +187,6 @@ const app = {
         });
         const data = await res.json();
         output.innerHTML = `<div style="color: var(--success-color)">Successfully processed ${data.count} resumes.</div>`;
-        
-        // Suggest moving to next step
-        setTimeout(() => {
-           if(confirm("Resumes uploaded! Move to 'Define Role' step?")) {
-             app.showStep('step-jd');
-           }
-        }, 1000);
 
       } catch (err) {
         output.innerHTML = `<div style="color: var(--danger-color)">Error: ${err.message}</div>`;
