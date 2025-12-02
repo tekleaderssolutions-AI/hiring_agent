@@ -102,6 +102,44 @@ const app = {
     }
   },
 
+  loadOutreachLogs: async () => {
+    const tbody = document.getElementById('outreach-logs-body');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Loading...</td></tr>';
+
+    try {
+      const res = await fetch('/outreach/logs');
+      const data = await res.json();
+
+      tbody.innerHTML = '';
+      if (data.logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No outreach logs yet</td></tr>';
+        return;
+      }
+
+      data.logs.forEach(log => {
+        const statusClass = log.acknowledgement === 'yes' ? 'score-high' :
+          log.acknowledgement === 'no' ? 'score-low' : 'score-medium';
+        const statusText = log.acknowledgement === 'yes' ? '✅ Interested' :
+          log.acknowledgement === 'no' ? '❌ Not Interested' : '⏳ Pending';
+
+        const row = `
+          <tr>
+            <td><strong>${log.candidate_name || 'Unknown'}</strong></td>
+            <td>${log.candidate_email}</td>
+            <td><span class="score-badge ${statusClass}">${log.ats_score}%</span></td>
+            <td>${statusText}</td>
+            <td>${new Date(log.sent_at).toLocaleString()}</td>
+          </tr>
+        `;
+        tbody.innerHTML += row;
+      });
+
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="5" style="color: red; text-align:center;">Error: ${err.message}</td></tr>`;
+    }
+  },
+
   init: () => {
     // Check authentication on page load
     app.checkAuth();

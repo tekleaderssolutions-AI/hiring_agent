@@ -177,14 +177,34 @@
 
         <!-- Step 3: Outreach -->
         <div id="step-outreach" class="step-content hidden">
-          <div class="card action-card">
+          <div class="card action-card full-width">
             <div class="card-header">
               <h3>📧 Candidate Outreach</h3>
-              <p>Review email status and communication logs.</p>
+              <p>Email status and communication logs.</p>
             </div>
-            <div class="info-box">
-              <p>Emails are automatically generated and sent to top candidates after analysis. Check the "AI Matching
-                Results" tab for the latest status.</p>
+
+            <button onclick="app.loadOutreachLogs()" class="btn btn-primary" style="margin-bottom: 1.5rem;">🔄 Refresh
+              Logs</button>
+
+            <div id="outreach-logs-area">
+              <div class="table-responsive">
+                <table class="results-table">
+                  <thead>
+                    <tr>
+                      <th>Candidate</th>
+                      <th>Email</th>
+                      <th>Score</th>
+                      <th>Status</th>
+                      <th>Sent At</th>
+                    </tr>
+                  </thead>
+                  <tbody id="outreach-logs-body">
+                    <tr>
+                      <td colspan="5" style="text-align:center;">Click Refresh to load logs</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
