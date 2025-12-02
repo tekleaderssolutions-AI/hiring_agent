@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Resume Ranking Portal</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Resume Ranking Portal</h1>
+      <p class="subtitle">AI-Powered Recruitment Assistant</p>
+    </header>
+
+    <!-- Landing Page / Role Selection -->
+    <div id="landing-page">
+      <div class="portal-selection">
+        <div class="card portal-card" onclick="app.showAdminPortal()">
+          <div class="portal-icon"></div>
+          <h2>Admin Portal</h2>
+          <p>Upload and manage resumes</p>
+        </div>
+        <div class="card portal-card" onclick="app.showRecruiterPortal()">
+          <div class="portal-icon"></div>
+          <h2>Recruiter Portal</h2>
+          <p>Upload JDs and rank candidates</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Portal -->
+    <div id="admin-portal" class="hidden">
+      <button onclick="app.showLanding()" class="back-btn">← Back to Home</button>
+
+      <div class="card">
+        <h3>Upload Resumes</h3>
+        <form id="admin-upload-form">
+          <div class="file-upload-area">
+            <input type="file" id="resume-files" multiple accept=".pdf,.docx" required>
+            <p>Drag & drop resumes or click to select</p>
+          </div>
+          <button type="submit" class="btn">Upload</button>
+        </form>
+        <div id="admin-output" style="margin-top: 1rem;"></div>
+      </div>
+
+      <div class="card">
+        <h3>System Maintenance</h3>
+        <button id="init-db-btn" class="btn btn-secondary">Initialize Database</button>
+        <div id="init-output" style="margin-top: 0.5rem;"></div>
+      </div>
+    </div>
+
+    <!-- Recruiter Portal -->
+    <div id="recruiter-portal" class="hidden">
+      <button onclick="app.showLanding()" class="back-btn">← Back to Home</button>
+
+      <div class="card">
+        <h3>Upload Job Description</h3>
+        <form id="jd-upload-form">
+          <div class="form-group">
+            <label for="jd-file">Upload</label>
+            <input type="file" id="jd-file" accept=".pdf" required>
+          </div>
+
+          <div class="form-group">
+            <label for="top-k-select">Number of Candidates</label>
+            <select id="top-k-select" onchange="app.handleTopKChange()">
+              <option value="custom" selected>Enter manually</option>
+              <option value="all">ALL</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="custom-top-k-group">
+            <label for="top-k-input">Enter Number</label>
+            <input type="number" id="top-k-input" min="1" max="100" value="5" placeholder="e.g., 5">
+          </div>
+
+          <button type="submit" class="btn">Find Match</button>
+        </form>
+        <div id="jd-output" style="margin-top: 1rem;"></div>
+      </div>
+
+      <!-- Hidden input to store JD database ID -->
+      <input type="hidden" id="jd-database-id" />
+
+      <div id="results-area" class="hidden" style="margin-top: 2rem;">
+        <h3>Ranking Results</h3>
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Candidate Name</th>
+              <th>Match Score</th>
+              <th>File</th>
+            </tr>
+          </thead>
+          <tbody id="results-body">
+            <!-- Results will be injected here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+
+</html>

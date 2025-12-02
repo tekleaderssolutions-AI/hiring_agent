@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+uenv/
+
+# IDEs
+.vscode/
+.idea/
+
+# Database
+*.sqlite3
+
+# Logs
+*.log
+
+# Google Credentials
+credentials.json
+token.json
