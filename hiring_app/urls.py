@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from .auth_views import login_view, logout_view, check_auth
+from .outreach_views import get_outreach_logs
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -18,4 +19,6 @@ urlpatterns = [
     path('auth/login', login_view, name='login'),
     path('auth/logout', logout_view, name='logout'),
     path('auth/check', check_auth, name='check_auth'),
+    # Outreach endpoints
+    path('outreach/logs', get_outreach_logs, name='outreach_logs'),
 ]
