@@ -4,110 +4,195 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Resume Ranking Portal</title>
+  <title>Recruitment Adventure</title>
   <link rel="stylesheet" href="/static/styles.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Using a more playful/modern font 'Outfit' similar to the image style -->
 </head>
 
 <body>
-  <div class="container">
+  <div class="main-container">
     <header>
-      <h1>Resume Ranking Portal</h1>
-      <p class="subtitle">AI-Powered Recruitment Assistant</p>
+      <h1>Recruitment Adventure</h1>
+      <p class="subtitle">Your journey to finding the perfect candidate starts here!</p>
     </header>
 
-    <!-- Landing Page / Role Selection -->
-    <div id="landing-page">
-      <div class="portal-selection">
-        <div class="card portal-card" onclick="app.showAdminPortal()">
-          <div class="portal-icon"></div>
-          <h2>Admin Portal</h2>
-          <p>Upload and manage resumes</p>
+    <!-- Journey Map Visualization -->
+    <div class="journey-map-container">
+      <svg class="journey-path-svg" viewBox="0 0 1000 200" preserveAspectRatio="none">
+        <!-- A curved dashed path connecting the nodes -->
+        <path d="M 100 100 Q 250 50 400 100 T 700 100 T 900 100" 
+              fill="none" stroke="#2563eb" stroke-width="4" stroke-dasharray="10,10" class="path-line"/>
+      </svg>
+
+      <div class="steps-wrapper">
+        <!-- Step 1: Talent Pool (Admin) -->
+        <div class="step-node active" onclick="app.showStep('step-talent')" id="node-talent">
+          <div class="step-icon">📂</div>
+          <div class="step-label">Talent Pool</div>
         </div>
-        <div class="card portal-card" onclick="app.showRecruiterPortal()">
-          <div class="portal-icon"></div>
-          <h2>Recruiter Portal</h2>
-          <p>Upload JDs and rank candidates</p>
+
+        <!-- Step 2: Job Description (Recruiter) -->
+        <div class="step-node" onclick="app.showStep('step-jd')" id="node-jd">
+          <div class="step-icon">🎯</div>
+          <div class="step-label">Define Role</div>
+        </div>
+
+        <!-- Step 3: AI Analysis (Results) -->
+        <div class="step-node" onclick="app.showStep('step-analysis')" id="node-analysis">
+          <div class="step-icon">🧠</div>
+          <div class="step-label">AI Matching</div>
+        </div>
+
+        <!-- Step 4: Outreach (Emails) -->
+        <div class="step-node" onclick="app.showStep('step-outreach')" id="node-outreach">
+          <div class="step-icon">📧</div>
+          <div class="step-label">Outreach</div>
+        </div>
+
+        <!-- Step 5: Interviews (Calendar) -->
+        <div class="step-node" onclick="app.showStep('step-interview')" id="node-interview">
+          <div class="step-icon">📅</div>
+          <div class="step-label">Interviews</div>
         </div>
       </div>
     </div>
 
-    <!-- Admin Portal -->
-    <div id="admin-portal" class="hidden">
-      <button onclick="app.showLanding()" class="back-btn">← Back to Home</button>
-
-      <div class="card">
-        <h3>Upload Resumes</h3>
-        <form id="admin-upload-form">
-          <div class="file-upload-area">
-            <input type="file" id="resume-files" multiple accept=".pdf,.docx" required>
-            <p>Drag & drop resumes or click to select</p>
+    <!-- Dynamic Action Area -->
+    <div class="action-area">
+      
+      <!-- Step 1 Content: Talent Pool -->
+      <div id="step-talent" class="step-content">
+        <div class="card action-card">
+          <div class="card-header">
+            <h3>📂 Build Your Talent Pool</h3>
+            <p>Upload resumes to populate the database.</p>
           </div>
-          <button type="submit" class="btn">Upload</button>
-        </form>
-        <div id="admin-output" style="margin-top: 1rem;"></div>
+          <form id="admin-upload-form">
+            <div class="file-upload-area">
+              <input type="file" id="resume-files" multiple accept=".pdf,.docx" required>
+              <div class="upload-placeholder">
+                <span class="upload-icon">☁️</span>
+                <p>Drag & drop resumes here or click to browse</p>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg">Upload Resumes</button>
+          </form>
+          <div id="admin-output" class="output-area"></div>
+          
+          <hr class="divider">
+          
+          <div class="system-maintenance">
+            <h4>System Maintenance</h4>
+            <button id="init-db-btn" class="btn btn-secondary btn-sm">Reset & Initialize Database</button>
+            <div id="init-output" class="output-area"></div>
+          </div>
+        </div>
       </div>
 
-      <div class="card">
-        <h3>System Maintenance</h3>
-        <button id="init-db-btn" class="btn btn-secondary">Initialize Database</button>
-        <div id="init-output" style="margin-top: 0.5rem;"></div>
+      <!-- Step 2 Content: Job Description -->
+      <div id="step-jd" class="step-content hidden">
+        <div class="card action-card">
+          <div class="card-header">
+            <h3>🎯 Define the Role</h3>
+            <p>Upload a Job Description (PDF) to find the best matches.</p>
+          </div>
+          <form id="jd-upload-form">
+            <div class="form-row">
+              <div class="form-group file-input-group">
+                <label for="jd-file">Job Description (PDF)</label>
+                <input type="file" id="jd-file" accept=".pdf" required class="form-control">
+              </div>
+              
+              <div class="form-group settings-group">
+                <label for="top-k-select">Candidates to Find</label>
+                <div class="select-wrapper">
+                  <select id="top-k-select" onchange="app.handleTopKChange()" class="form-control">
+                    <option value="custom" selected>Top N Matches</option>
+                    <option value="all">Analyze All</option>
+                  </select>
+                </div>
+                <div id="custom-top-k-group" class="mt-2">
+                  <input type="number" id="top-k-input" min="1" max="100" value="5" class="form-control" placeholder="e.g. 5">
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg pulse-animation">🚀 Launch AI Analysis</button>
+          </form>
+          <div id="jd-output" class="output-area"></div>
+        </div>
       </div>
+
+      <!-- Step 3 Content: AI Analysis -->
+      <div id="step-analysis" class="step-content hidden">
+        <div class="card action-card full-width">
+          <div class="card-header">
+            <h3>🧠 AI Matching Results</h3>
+            <p>Here are the top candidates based on semantic similarity.</p>
+          </div>
+          
+          <!-- Hidden input to store JD database ID -->
+          <input type="hidden" id="jd-database-id" />
+
+          <div id="results-area" class="hidden">
+            <div class="table-responsive">
+              <table class="results-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Candidate</th>
+                    <th>Match Score</th>
+                    <th>Resume File</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="results-body">
+                  <!-- Results injected here -->
+                </tbody>
+              </table>
+            </div>
+            <div class="actions-footer">
+              <button onclick="app.showStep('step-outreach')" class="btn btn-success">Proceed to Outreach →</button>
+            </div>
+          </div>
+          <div id="no-results-placeholder" class="placeholder-message">
+            <p>No analysis results yet. Please go to <b>Define Role</b> and upload a JD first.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 Content: Outreach -->
+      <div id="step-outreach" class="step-content hidden">
+        <div class="card action-card">
+          <div class="card-header">
+            <h3>📧 Candidate Outreach</h3>
+            <p>Review email status and communication logs.</p>
+          </div>
+          <div class="info-box">
+            <p>Emails are automatically generated and sent to top candidates after analysis. Check the "AI Matching Results" tab for the latest status.</p>
+          </div>
+          <!-- Future: Add email templates or manual trigger here -->
+        </div>
+      </div>
+
+      <!-- Step 5 Content: Interviews -->
+      <div id="step-interview" class="step-content hidden">
+        <div class="card action-card">
+          <div class="card-header">
+            <h3>📅 Interview Scheduler</h3>
+            <p>Track scheduled interviews and confirmations.</p>
+          </div>
+          <div class="calendar-placeholder">
+            <p><i>(Integration with Google Calendar)</i></p>
+            <button onclick="app.checkInterviewStatus()" class="btn btn-secondary">🔄 Refresh Status</button>
+            <div id="interview-status-output" class="output-area mt-3"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
-
-    <!-- Recruiter Portal -->
-    <div id="recruiter-portal" class="hidden">
-      <button onclick="app.showLanding()" class="back-btn">← Back to Home</button>
-
-      <div class="card">
-        <h3>Upload Job Description</h3>
-        <form id="jd-upload-form">
-          <div class="form-group">
-            <label for="jd-file">Upload</label>
-            <input type="file" id="jd-file" accept=".pdf" required>
-          </div>
-
-          <div class="form-group">
-            <label for="top-k-select">Number of Candidates</label>
-            <select id="top-k-select" onchange="app.handleTopKChange()">
-              <option value="custom" selected>Enter manually</option>
-              <option value="all">ALL</option>
-            </select>
-          </div>
-
-          <div class="form-group" id="custom-top-k-group">
-            <label for="top-k-input">Enter Number</label>
-            <input type="number" id="top-k-input" min="1" max="100" value="5" placeholder="e.g., 5">
-          </div>
-
-          <button type="submit" class="btn">Find Match</button>
-        </form>
-        <div id="jd-output" style="margin-top: 1rem;"></div>
-      </div>
-
-      <!-- Hidden input to store JD database ID -->
-      <input type="hidden" id="jd-database-id" />
-
-      <div id="results-area" class="hidden" style="margin-top: 2rem;">
-        <h3>Ranking Results</h3>
-        <table class="results-table">
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Candidate Name</th>
-              <th>Match Score</th>
-              <th>File</th>
-            </tr>
-          </thead>
-          <tbody id="results-body">
-            <!-- Results will be injected here -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-
   </div>
   <script src="/static/app.js"></script>
 </body>
-
 </html>
