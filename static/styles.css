@@ -599,3 +599,9 @@ label {
   min-width: 800px !important;
   table-layout: auto !important;
 }
+
+/* Adjust table sizing to fix zoomed out look */
+.results-table td {
+  padding: 0.75rem 1rem !important;
+  font-size: 0.95rem !important;
+}
