@@ -619,3 +619,22 @@ label {
 * {
   box-sizing: border-box;
 }
+
+/* Increase font size and make first column sticky */
+.interview-table td {
+  font-size: 1rem !important;
+}
+
+.interview-table th:first-child,
+.interview-table td:first-child {
+  position: sticky;
+  left: 0;
+  background: white;
+  z-index: 10;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+}
+
+.interview-table th:first-child {
+  background: #f9fafb;
+  z-index: 20;
+}
