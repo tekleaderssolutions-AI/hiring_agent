@@ -299,6 +299,8 @@ label {
 /* Tables */
 .table-responsive {
   overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .results-table {
