@@ -580,3 +580,9 @@ label {
 .hidden {
   display: none !important;
 }
+/* Override for compact table */
+.results-table td {
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.85rem !important;
+  vertical-align: middle !important;
+}
