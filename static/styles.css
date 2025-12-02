@@ -306,8 +306,13 @@ label {
 
 .results-table {
   width: 100%;
+  max-width: 100%;
   border-collapse: separate;
   border-spacing: 0 0.5rem;
+  table-layout: auto;
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
 .results-table th {
