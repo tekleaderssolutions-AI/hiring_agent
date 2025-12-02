@@ -48,8 +48,21 @@ Scroll down to the **Environment Variables** section and click **Add Environment
 > 2.  Copy the **Internal Database URL** or the individual credentials (Host, User, Password, Database) to the environment variables above.
 > 3.  **Important**: Ensure your Web Service and Database are in the same region for internal networking to work.
 
-## Step 4: Deploy
-1.  Click **Create Web Service**.
+## Step 5: Configure Secret Files (Crucial for Calendar)
+Your application uses `credentials.json` and `token.json` for Google Calendar integration. These files are not in GitHub for security. You must upload them to Render.
+
+1.  Go to the **Environment** tab of your Web Service.
+2.  Scroll down to **Secret Files**.
+3.  Click **Add Secret File**.
+4.  **File 1**:
+    -   **Filename**: `credentials.json`
+    -   **Content**: Open your local `credentials.json` file, copy the entire content, and paste it here.
+5.  **File 2** (Optional but recommended to avoid re-auth):
+    -   **Filename**: `token.json`
+    -   **Content**: Open your local `token.json` file, copy the entire content, and paste it here.
+
+## Step 6: Deploy
+1.  Click **Create Web Service** (or **Manual Deploy** -> **Deploy latest commit** if you already created it).
 2.  Render will start building your application. You can watch the logs in the dashboard.
 3.  Once the build finishes and the service is live, you will see a green "Live" badge.
 
