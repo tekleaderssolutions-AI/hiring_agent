@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Recruitment Adventure</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="main-container">
+    <header>
+      <h1>Recruitment Adventure</h1>
+      <p class="subtitle">Your journey to finding the perfect candidate starts here!</p>
+    </header>
+
+    <!-- Landing Page / Portal Selection -->
+    <div id="landing-page">
+      <div class="portal-selection">
+        <div class="card portal-card" onclick="window.location.href='/static/admin_login.html'">
+          <div class="portal-icon">👨‍💼</div>
+          <h2>Admin Portal</h2>
+          <p>Build and manage your talent pool</p>
+        </div>
+        <div class="card portal-card" onclick="window.location.href='/static/recruiter_login.html'">
+          <div class="portal-icon">🎯</div>
+          <h2>Recruiter Portal</h2>
+          <p>Find and hire the best candidates</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Portal -->
+    <div id="admin-portal" class="hidden">
+      <div class="portal-header">
+        <button onclick="app.logout()" class="logout-btn">Logout</button>
+      </div>
+
+      <div class="card action-card">
+        <div class="card-header">
+          <h3>📂 Build Your Talent Pool</h3>
+          <p>Upload resumes to populate the database.</p>
+        </div>
+        <form id="admin-upload-form">
+          <div class="file-upload-area">
+            <input type="file" id="resume-files" multiple accept=".pdf,.docx" required>
+            <div class="upload-placeholder">
+              <span class="upload-icon">☁️</span>
+              <p>Drag & drop resumes here or click to browse</p>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg">Upload Resumes</button>
+        </form>
+        <div id="admin-output" class="output-area"></div>
+
+        <hr class="divider">
+
+        <div class="system-maintenance">
+          <h4>System Maintenance</h4>
+          <button id="init-db-btn" class="btn btn-secondary btn-sm">Reset & Initialize Database</button>
+          <div id="init-output" class="output-area"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recruiter Portal -->
+    <div id="recruiter-portal" class="hidden">
+      <div class="portal-header">
+        <button onclick="app.logout()" class="logout-btn">Logout</button>
+      </div>
+
+      <!-- Journey Map Visualization -->
+      <div class="journey-map-container">
+        <svg class="journey-path-svg" viewBox="0 0 1000 200" preserveAspectRatio="none">
+          <path d="M 100 100 Q 250 50 400 100 T 700 100 T 900 100" fill="none" stroke="#2563eb" stroke-width="4"
+            stroke-dasharray="10,10" class="path-line" />
+        </svg>
+
+        <div class="steps-wrapper">
+          <div class="step-node active" onclick="app.showStep('step-jd')" id="node-jd">
+            <div class="step-icon">🎯</div>
+            <div class="step-label">Define Role</div>
+          </div>
+
+          <div class="step-node" onclick="app.showStep('step-analysis')" id="node-analysis">
+            <div class="step-icon">🧠</div>
+            <div class="step-label">AI Matching</div>
+          </div>
+
+          <div class="step-node" onclick="app.showStep('step-outreach')" id="node-outreach">
+            <div class="step-icon">📧</div>
+            <div class="step-label">Outreach</div>
+          </div>
+
+          <div class="step-node" onclick="app.showStep('step-interview')" id="node-interview">
+            <div class="step-icon">📅</div>
+            <div class="step-label">Interviews</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Action Area -->
+      <div class="action-area">
+
+        <!-- Step 1: Job Description -->
+        <div id="step-jd" class="step-content">
+          <div class="card action-card">
+            <div class="card-header">
+              <h3>🎯 Define the Role</h3>
+              <p>Upload a Job Description (PDF) to find the best matches.</p>
+            </div>
+            <form id="jd-upload-form">
+              <div class="form-row">
+                <div class="form-group file-input-group">
+                  <label for="jd-file">Job Description (PDF)</label>
+                  <input type="file" id="jd-file" accept=".pdf" required class="form-control">
+                </div>
+
+                <div class="form-group settings-group">
+                  <label for="top-k-select">Candidates to Find</label>
+                  <div class="select-wrapper">
+                    <select id="top-k-select" onchange="app.handleTopKChange()" class="form-control">
+                      <option value="custom" selected>Top N Matches</option>
+                      <option value="all">Analyze All</option>
+                    </select>
+                  </div>
+                  <div id="custom-top-k-group" class="mt-2">
+                    <input type="number" id="top-k-input" min="1" max="100" value="5" class="form-control"
+                      placeholder="e.g. 5">
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg pulse-animation">🚀 Launch AI Analysis</button>
+            </form>
+            <div id="jd-output" class="output-area"></div>
+          </div>
+        </div>
+
+        <!-- Step 2: AI Analysis -->
+        <div id="step-analysis" class="step-content hidden">
+          <div class="card action-card full-width">
+            <div class="card-header">
+              <h3>🧠 AI Matching Results</h3>
+              <p>Here are the top candidates based on semantic similarity.</p>
+            </div>
+
+            <input type="hidden" id="jd-database-id" />
+
+            <div id="results-area" class="hidden">
+              <div class="table-responsive">
+                <table class="interview-table" style="width: 100%; min-width: 900px; border-collapse: collapse;">
+                  <thead>
+                    <tr>
+                      <th>Rank</th>
+                      <th>Candidate</th>
+                      <th>Match Score</th>
+                      <th>Resume File</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="results-body">
+                  </tbody>
+                </table>
+              </div>
+              <div class="actions-footer">
+                <button onclick="app.showStep('step-outreach')" class="btn btn-success">Proceed to Outreach →</button>
+              </div>
+            </div>
+            <div id="no-results-placeholder" class="placeholder-message">
+              <p>No analysis results yet. Please go to <b>Define Role</b> and upload a JD first.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Outreach -->
+        <div id="step-outreach" class="step-content hidden">
+          <div class="card action-card full-width">
+            <div class="card-header">
+              <h3>📧 Candidate Outreach</h3>
+              <p>Email status and communication logs.</p>
+            </div>
+
+            <button onclick="app.loadOutreachLogs()" class="btn btn-primary" style="margin-bottom: 1.5rem;">🔄 Refresh
+              Logs</button>
+
+            <div id="outreach-logs-area">
+              <div class="table-responsive">
+                <table class="interview-table" style="width: 100%; min-width: 900px; border-collapse: collapse;">
+                  <thead>
+                    <tr>
+                      <th>Candidate</th>
+                      <th>Email</th>
+                      <th>Score</th>
+                      <th>Status</th>
+                      <th>Sent At</th>
+                    </tr>
+                  </thead>
+                  <tbody id="outreach-logs-body">
+                    <tr>
+                      <td colspan="5" style="text-align:center;">Click Refresh to load logs</td>
+                    </tr>
+                    </head>
+
+                    <body>
+                      <div class="main-container">
+                        <header>
+                          <h1>Recruitment Adventure</h1>
+                          <p class="subtitle">Your journey to finding the perfect candidate starts here!</p>
+                        </header>
+
+                        <!-- Landing Page / Portal Selection -->
+                        <div id="landing-page">
+                          <div class="portal-selection">
+                            <div class="card portal-card" onclick="window.location.href='/static/admin_login.html'">
+                              <div class="portal-icon">👨‍💼</div>
+                              <h2>Admin Portal</h2>
+                              <p>Build and manage your talent pool</p>
+                            </div>
+                            <div class="card portal-card" onclick="window.location.href='/static/recruiter_login.html'">
+                              <div class="portal-icon">🎯</div>
+                              <h2>Recruiter Portal</h2>
+                              <p>Find and hire the best candidates</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Admin Portal -->
+                        <div id="admin-portal" class="hidden">
+                          <div class="portal-header">
+                            <button onclick="app.logout()" class="logout-btn">Logout</button>
+                          </div>
+
+                          <div class="card action-card">
+                            <div class="card-header">
+                              <h3>📂 Build Your Talent Pool</h3>
+                              <p>Upload resumes to populate the database.</p>
+                            </div>
+                            <form id="admin-upload-form">
+                              <div class="file-upload-area">
+                                <input type="file" id="resume-files" multiple accept=".pdf,.docx" required>
+                                <div class="upload-placeholder">
+                                  <span class="upload-icon">☁️</span>
+                                  <p>Drag & drop resumes here or click to browse</p>
+                                </div>
+                              </div>
+                              <button type="submit" class="btn btn-primary btn-lg">Upload Resumes</button>
+                            </form>
+                            <div id="admin-output" class="output-area"></div>
+
+                            <hr class="divider">
+
+                            <div class="system-maintenance">
+                              <h4>System Maintenance</h4>
+                              <button id="init-db-btn" class="btn btn-secondary btn-sm">Reset & Initialize
+                                Database</button>
+                              <div id="init-output" class="output-area"></div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Recruiter Portal -->
+                        <div id="recruiter-portal" class="hidden">
+                          <div class="portal-header">
+                            <button onclick="app.logout()" class="logout-btn">Logout</button>
+                          </div>
+
+                          <!-- Journey Map Visualization -->
+                          <div class="journey-map-container">
+                            <svg class="journey-path-svg" viewBox="0 0 1000 200" preserveAspectRatio="none">
+                              <path d="M 100 100 Q 250 50 400 100 T 700 100 T 900 100" fill="none" stroke="#2563eb"
+                                stroke-width="4" stroke-dasharray="10,10" class="path-line" />
+                            </svg>
+
+                            <div class="steps-wrapper">
+                              <div class="step-node active" onclick="app.showStep('step-jd')" id="node-jd">
+                                <div class="step-icon">🎯</div>
+                                <div class="step-label">Define Role</div>
+                              </div>
+
+                              <div class="step-node" onclick="app.showStep('step-analysis')" id="node-analysis">
+                                <div class="step-icon">🧠</div>
+                                <div class="step-label">AI Matching</div>
+                              </div>
+
+                              <div class="step-node" onclick="app.showStep('step-outreach')" id="node-outreach">
+                                <div class="step-icon">📧</div>
+                                <div class="step-label">Outreach</div>
+                              </div>
+
+                              <div class="step-node" onclick="app.showStep('step-interview')" id="node-interview">
+                                <div class="step-icon">📅</div>
+                                <div class="step-label">Interviews</div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Dynamic Action Area -->
+                          <div class="action-area">
+
+                            <!-- Step 1: Job Description -->
+                            <div id="step-jd" class="step-content">
+                              <div class="card action-card">
+                                <div class="card-header">
+                                  <h3>🎯 Define the Role</h3>
+                                  <p>Upload a Job Description (PDF) to find the best matches.</p>
+                                </div>
+                                <form id="jd-upload-form">
+                                  <div class="form-row">
+                                    <div class="form-group file-input-group">
+                                      <label for="jd-file">Job Description (PDF)</label>
+                                      <input type="file" id="jd-file" accept=".pdf" required class="form-control">
+                                    </div>
+
+                                    <div class="form-group settings-group">
+                                      <label for="top-k-select">Candidates to Find</label>
+                                      <div class="select-wrapper">
+                                        <select id="top-k-select" onchange="app.handleTopKChange()"
+                                          class="form-control">
+                                          <option value="custom" selected>Top N Matches</option>
+                                          <option value="all">Analyze All</option>
+                                        </select>
+                                      </div>
+                                      <div id="custom-top-k-group" class="mt-2">
+                                        <input type="number" id="top-k-input" min="1" max="100" value="5"
+                                          class="form-control" placeholder="e.g. 5">
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <button type="submit" class="btn btn-primary btn-lg pulse-animation">🚀 Launch AI
+                                    Analysis</button>
+                                </form>
+                                <div id="jd-output" class="output-area"></div>
+                              </div>
+                            </div>
+
+                            <!-- Step 2: AI Analysis -->
+                            <div id="step-analysis" class="step-content hidden">
+                              <div class="card action-card full-width">
+                                <div class="card-header">
+                                  <h3>🧠 AI Matching Results</h3>
+                                  <p>Here are the top candidates based on semantic similarity.</p>
+                                </div>
+
+                                <input type="hidden" id="jd-database-id" />
+
+                                <div id="results-area" class="hidden">
+                                  <div class="table-responsive">
+                                    <table class="interview-table"
+                                      style="width: 100%; min-width: 900px; border-collapse: collapse;">
+                                      <thead>
+                                        <tr>
+                                          <th>Rank</th>
+                                          <th>Candidate</th>
+                                          <th>Match Score</th>
+                                          <th>Resume File</th>
+                                          <th>Status</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody id="results-body">
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                  <div class="actions-footer">
+                                    <button onclick="app.showStep('step-outreach')" class="btn btn-success">Proceed to
+                                      Outreach →</button>
+                                  </div>
+                                </div>
+                                <div id="no-results-placeholder" class="placeholder-message">
+                                  <p>No analysis results yet. Please go to <b>Define Role</b> and upload a JD first.</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- Step 3: Outreach -->
+                            <div id="step-outreach" class="step-content hidden">
+                              <div class="card action-card full-width">
+                                <div class="card-header">
+                                  <h3>📧 Candidate Outreach</h3>
+                                  <p>Email status and communication logs.</p>
+                                </div>
+
+                                <button onclick="app.loadOutreachLogs()" class="btn btn-primary"
+                                  style="margin-bottom: 1.5rem;">🔄 Refresh
+                                  Logs</button>
+
+                                <div id="outreach-logs-area">
+                                  <div class="table-responsive">
+                                    <table class="interview-table"
+                                      style="width: 100%; min-width: 900px; border-collapse: collapse;">
+                                      <thead>
+                                        <tr>
+                                          <th>Candidate</th>
+                                          <th>Email</th>
+                                          <th>Score</th>
+                                          <th>Status</th>
+                                          <th>Sent At</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody id="outreach-logs-body">
+                                        <header>
+                                          <h1>Recruitment Adventure</h1>
+                                          <p class="subtitle">Your journey to finding the perfect candidate starts here!
+                                          </p>
+                                        </header>
+
+                                        <!-- Landing Page / Portal Selection -->
+                                        <div id="landing-page">
+                                          <div class="portal-selection">
+                                            <div class="card portal-card"
+                                              onclick="window.location.href='/static/admin_login.html'">
+                                              <div class="portal-icon">👨‍💼</div>
+                                              <h2>Admin Portal</h2>
+                                              <p>Build and manage your talent pool</p>
+                                            </div>
+                                            <div class="card portal-card"
+                                              onclick="window.location.href='/static/recruiter_login.html'">
+                                              <div class="portal-icon">🎯</div>
+                                              <h2>Recruiter Portal</h2>
+                                              <p>Find and hire the best candidates</p>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        <!-- Admin Portal -->
+                                        <div id="admin-portal" class="hidden">
+                                          <div class="portal-header">
+                                            <button onclick="app.logout()" class="logout-btn">Logout</button>
+                                          </div>
+
+                                          <div class="card action-card">
+                                            <div class="card-header">
+                                              <h3>📂 Build Your Talent Pool</h3>
+                                              <p>Upload resumes to populate the database.</p>
+                                            </div>
+                                            <form id="admin-upload-form">
+                                              <div class="file-upload-area">
+                                                <input type="file" id="resume-files" multiple accept=".pdf,.docx"
+                                                  required>
+                                                <div class="upload-placeholder">
+                                                  <span class="upload-icon">☁️</span>
+                                                  <p>Drag & drop resumes here or click to browse</p>
+                                                </div>
+                                              </div>
+                                              <button type="submit" class="btn btn-primary btn-lg">Upload
+                                                Resumes</button>
+                                            </form>
+                                            <div id="admin-output" class="output-area"></div>
+
+                                            <hr class="divider">
+
+                                            <div class="system-maintenance">
+                                              <h4>System Maintenance</h4>
+                                              <button id="init-db-btn" class="btn btn-secondary btn-sm">Reset &
+                                                Initialize
+                                                Database</button>
+                                              <div id="init-output" class="output-area"></div>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        <!-- Recruiter Portal -->
+                                        <div id="recruiter-portal" class="hidden">
+                                          <div class="portal-header">
+                                            <button onclick="app.logout()" class="logout-btn">Logout</button>
+                                          </div>
+
+                                          <!-- Journey Map Visualization -->
+                                          <div class="journey-map-container">
+                                            <svg class="journey-path-svg" viewBox="0 0 1000 200"
+                                              preserveAspectRatio="none">
+                                              <path d="M 100 100 Q 250 50 400 100 T 700 100 T 900 100" fill="none"
+                                                stroke="#2563eb" stroke-width="4" stroke-dasharray="10,10"
+                                                class="path-line" />
+                                            </svg>
+
+                                            <div class="steps-wrapper">
+                                              <div class="step-node active" onclick="app.showStep('step-jd')"
+                                                id="node-jd">
+                                                <div class="step-icon">🎯</div>
+                                                <div class="step-label">Define Role</div>
+                                              </div>
+
+                                              <div class="step-node" onclick="app.showStep('step-analysis')"
+                                                id="node-analysis">
+                                                <div class="step-icon">🧠</div>
+                                                <div class="step-label">AI Matching</div>
+                                              </div>
+
+                                              <div class="step-node" onclick="app.showStep('step-outreach')"
+                                                id="node-outreach">
+                                                <div class="step-icon">📧</div>
+                                                <div class="step-label">Outreach</div>
+                                              </div>
+
+                                              <div class="step-node" onclick="app.showStep('step-interview')"
+                                                id="node-interview">
+                                                <div class="step-icon">📅</div>
+                                                <div class="step-label">Interviews</div>
+                                              </div>
+                                            </div>
+                                          </div>
+
+                                          <!-- Dynamic Action Area -->
+                                          <div class="action-area">
+
+                                            <!-- Step 1: Job Description -->
+                                            <div id="step-jd" class="step-content">
+                                              <div class="card action-card">
+                                                <div class="card-header">
+                                                  <h3>🎯 Define the Role</h3>
+                                                  <p>Upload a Job Description (PDF) to find the best matches.</p>
+                                                </div>
+                                                <form id="jd-upload-form">
+                                                  <div class="form-row">
+                                                    <div class="form-group file-input-group">
+                                                      <label for="jd-file">Job Description (PDF)</label>
+                                                      <input type="file" id="jd-file" accept=".pdf" required
+                                                        class="form-control">
+                                                    </div>
+
+                                                    <div class="form-group settings-group">
+                                                      <label for="top-k-select">Candidates to Find</label>
+                                                      <div class="select-wrapper">
+                                                        <select id="top-k-select" onchange="app.handleTopKChange()"
+                                                          class="form-control">
+                                                          <option value="custom" selected>Top N Matches</option>
+                                                          <option value="all">Analyze All</option>
+                                                        </select>
+                                                      </div>
+                                                      <div id="custom-top-k-group" class="mt-2">
+                                                        <input type="number" id="top-k-input" min="1" max="100"
+                                                          value="5" class="form-control" placeholder="e.g. 5">
+                                                      </div>
+                                                    </div>
+                                                  </div>
+
+                                                  <button type="submit"
+                                                    class="btn btn-primary btn-lg pulse-animation">🚀 Launch AI
+                                                    Analysis</button>
+                                                </form>
+                                                <div id="jd-output" class="output-area"></div>
+                                              </div>
+                                            </div>
+
+                                            <!-- Step 2: AI Analysis -->
+                                            <div id="step-analysis" class="step-content hidden">
+                                              <div class="card action-card full-width">
+                                                <div class="card-header">
+                                                  <h3>🧠 AI Matching Results</h3>
+                                                  <p>Here are the top candidates based on semantic similarity.</p>
+                                                </div>
+
+                                                <input type="hidden" id="jd-database-id" />
+
+                                                <div id="results-area" class="hidden">
+                                                  <div class="table-responsive">
+                                                    <table class="interview-table"
+                                                      style="width: 100%; min-width: 900px; border-collapse: collapse;">
+                                                      <thead>
+                                                        <tr>
+                                                          <th>Rank</th>
+                                                          <th>Candidate</th>
+                                                          <th>Match Score</th>
+                                                          <th>Resume File</th>
+                                                          <th>Status</th>
+                                                        </tr>
+                                                      </thead>
+                                                      <tbody id="results-body">
+                                                      </tbody>
+                                                    </table>
+                                                  </div>
+                                                  <div class="actions-footer">
+                                                    <button onclick="app.showStep('step-outreach')"
+                                                      class="btn btn-success">Proceed to
+                                                      Outreach →</button>
+                                                  </div>
+                                                </div>
+                                                <div id="no-results-placeholder" class="placeholder-message">
+                                                  <p>No analysis results yet. Please go to <b>Define Role</b> and upload
+                                                    a JD first.</p>
+                                                </div>
+                                              </div>
+                                            </div>
+
+                                            <!-- Step 3: Outreach -->
+                                            <div id="step-outreach" class="step-content hidden">
+                                              <div class="card action-card full-width">
+                                                <div class="card-header">
+                                                  <h3>📧 Candidate Outreach</h3>
+                                                  <p>Email status and communication logs.</p>
+                                                </div>
+
+                                                <button onclick="app.loadOutreachLogs()" class="btn btn-primary"
+                                                  style="margin-bottom: 1.5rem;">🔄 Refresh
+                                                  Logs</button>
+
+                                                <div id="outreach-logs-area">
+                                                  <div class="table-responsive">
+                                                    <table class="interview-table"
+                                                      style="width: 100%; min-width: 900px; border-collapse: collapse;">
+                                                      <thead>
+                                                        <tr>
+                                                          <th>Candidate</th>
+                                                          <th>Email</th>
+                                                          <th>Score</th>
+                                                          <th>Status</th>
+                                                          <th>Sent At</th>
+                                                        </tr>
+                                                      </thead>
+                                                      <tbody id="outreach-logs-body">
+                                                        <tr>
+                                                          <td colspan="5" style="text-align:center;">Click Refresh to
+                                                            load logs</td>
+                                                        </tr>
+                                                      </tbody>
+                                                    </table>
+                                                  </div>
+                                                </div>
+                                              </div>
+
+                                              <!-- Step 4: Interviews -->
+                                              <div id="step-interview" class="step-content hidden">
+                                                <div class="card action-card"
+                                                  style="max-width: 100%; overflow: hidden;">
+                                                  <div class="card-header"
+                                                    style="display: flex; justify-content: space-between; align-items: center;">
+                                                    <div>
+                                                      <h3>📅 Interview Scheduler</h3>
+                                                      <p>Track scheduled interviews and confirmations.</p>
+                                                    </div>
+                                                    <button onclick="app.checkInterviewStatus()"
+                                                      class="btn btn-secondary"
+                                                      style="font-size: 0.9rem; padding: 0.5rem 1rem;">🔄
+                                                      Refresh</button>
+                                                  </div>
+
+                                                  <div class="interview-table-wrapper"
+                                                    style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
+                                                    <table class="interview-table"
+                                                      style="width: 100%; border-collapse: collapse;">
+                                                      <thead
+                                                        style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                                                        <tr>
+                                                          <th
+                                                            style="padding: 1rem; text-align: left; white-space: nowrap; font-weight: 600; color: #4b5563; min-width: 180px;">
+                                                            Candidate</th>
+                                                          <th
+                                                            style="padding: 1rem; text-align: left; white-space: nowrap; font-weight: 600; color: #4b5563;">
+                                                            Email</th>
+                                                          <th
+                                                            style="padding: 1rem; text-align: left; white-space: nowrap; font-weight: 600; color: #4b5563;">
+                                                            Role</th>
+                                                          <th
+                                                            style="padding: 1rem; text-align: left; white-space: nowrap; font-weight: 600; color: #4b5563;">
+                                                            Date</th>
+                                                          <th
+                                                            style="padding: 1rem; text-align: left; white-space: nowrap; font-weight: 600; color: #4b5563;">
+                                                            Time</th>
+                                                          <th
+                                                            style="padding: 1rem; text-align: left; white-space: nowrap; font-weight: 600; color: #4b5563;">
+                                                            Status</th>
+                                                          <th
+                                                            style="padding: 1rem; text-align: left; white-space: nowrap; font-weight: 600; color: #4b5563;">
+                                                            Actions</th>
+                                                          <th
+                                                            style="padding: 1rem; text-align: left; white-space: nowrap; font-weight: 600; color: #4b5563;">
+                                                            Interviewer</th>
+                                                        </tr>
+                                                      </thead>
+                                                      <tbody id="interview-status-body">
+                                                        <tr>
+                                                          <td colspan="8" style="text-align:center; padding: 2rem;">
+                                                            Click Refresh to load interview status</td>
+                                                        </tr>
+                                                      </tbody>
+                                                    </table>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <script src="/static/app.js"></script>
+                    </body>
+
+</html>
