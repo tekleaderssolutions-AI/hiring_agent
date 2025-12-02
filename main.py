@@ -1,15 +1,17 @@
 # main.py
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from typing import Optional, List, Dict, Any
 import pdfplumber
 from io import BytesIO
+import hashlib
 
 from jd_agent import analyze_job_description
 from ranker_agent import get_top_matches_for_role
 from resume_agent import process_resume_text
+from db import get_connection
 
 
  
@@ -56,6 +58,120 @@ def debug():
         "CHAT_MODEL": os.environ.get("CHAT_MODEL"),
         "EMBEDDING_MODEL": os.environ.get("EMBEDDING_MODEL"),
     }
+
+# Authentication helper
+def hash_password(password: str) -> str:
+    """Hash password using SHA-256"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# Authentication endpoints
+@app.post("/auth/login")
+async def login(request: Request):
+    """Handle login requests"""
+    try:
+        data = await request.json()
+        username = data.get('username')
+        password = data.get('password')
+        role = data.get('role')  # 'admin' or 'recruiter'
+        
+        if not username or not password or not role:
+            return JSONResponse({'success': False, 'message': 'Missing credentials'}, status_code=400)
+        
+        # Hash the provided password
+        password_hash = hash_password(password)
+        
+        # Query database
+        conn = get_connection()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            SELECT id, username, role, email 
+            FROM users 
+            WHERE username = %s AND password_hash = %s AND role = %s
+        """, (username, password_hash, role))
+        
+        user = cur.fetchone()
+        cur.close()
+        conn.close()
+        
+        if user:
+            return JSONResponse({
+                'success': True,
+                'user': {
+                    'username': user[1],
+                    'role': user[2],
+                    'email': user[3]
+                }
+            })
+        else:
+            return JSONResponse({'success': False, 'message': 'Invalid credentials'}, status_code=401)
+            
+    except Exception as e:
+        return JSONResponse({'success': False, 'message': str(e)}, status_code=500)
+
+@app.post("/auth/logout")
+@app.get("/auth/logout")
+async def logout():
+    """Handle logout requests"""
+    try:
+        return JSONResponse({'success': True, 'message': 'Logged out successfully'})
+    except Exception as e:
+        return JSONResponse({'success': False, 'message': str(e)}, status_code=500)
+
+@app.get("/auth/check")
+async def check_auth():
+    """Check if user is authenticated"""
+    return JSONResponse({'authenticated': False})
+
+# Outreach logs endpoint
+@app.get("/outreach/logs")
+async def get_outreach_logs():
+    """Get all candidate outreach logs with email status"""
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        
+        cur.execute("""
+            SELECT 
+                co.id,
+                co.candidate_name,
+                co.candidate_email,
+                co.ats_score,
+                co.acknowledgement,
+                co.sent_at,
+                co.acknowledged_at,
+                m.title as jd_title
+            FROM candidate_outreach co
+            LEFT JOIN memories m ON co.jd_id = m.id
+            ORDER BY co.sent_at DESC
+            LIMIT 100
+        """)
+        
+        rows = cur.fetchall()
+        cur.close()
+        
+        logs = []
+        for row in rows:
+            logs.append({
+                "id": str(row[0]),
+                "candidate_name": row[1],
+                "candidate_email": row[2],
+                "ats_score": row[3],
+                "acknowledgement": row[4] if row[4] else "pending",
+                "sent_at": str(row[5]) if row[5] else None,
+                "acknowledged_at": str(row[6]) if row[6] else None,
+                "jd_title": row[7]
+            })
+        
+        return {
+            "total": len(logs),
+            "logs": logs
+        }
+        
+    except Exception as e:
+        return JSONResponse({'error': f"Error fetching outreach logs: {str(e)}"}, status_code=500)
+    finally:
+        conn.close()
  
 def _extract_pdf_text(contents: bytes) -> str:
     with pdfplumber.open(BytesIO(contents)) as pdf:
