@@ -583,7 +583,9 @@ def get_interviews_status(request):
                     i.confirmed_slot_time,
                     r.candidate_name,
                     r.email,
-                    m.title as jd_title
+                    m.title as jd_title,
+                    i.event_link,
+                    i.event_id
                 FROM interview_schedules i
                 JOIN resumes r ON r.id = i.resume_id
                 JOIN memories m ON m.id = i.jd_id
@@ -601,7 +603,9 @@ def get_interviews_status(request):
                     i.confirmed_slot_time,
                     r.candidate_name,
                     r.email,
-                    m.title as jd_title
+                    m.title as jd_title,
+                    i.event_link,
+                    i.event_id
                 FROM interview_schedules i
                 JOIN resumes r ON r.id = i.resume_id
                 JOIN memories m ON m.id = i.jd_id
@@ -611,6 +615,8 @@ def get_interviews_status(request):
         
         rows = cur.fetchall()
         cur.close()
+        
+        from config import INTERVIEWER_EMAIL
         
         interviews = []
         for row in rows:
@@ -622,7 +628,10 @@ def get_interviews_status(request):
                 "confirmed_time": str(row[4]) if row[4] else None,
                 "candidate_name": row[5],
                 "candidate_email": row[6],
-                "jd_title": row[7]
+                "jd_title": row[7],
+                "event_link": row[8],
+                "event_id": row[9],
+                "interviewer_email": INTERVIEWER_EMAIL
             })
         
         return JsonResponse({

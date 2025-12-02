@@ -211,15 +211,38 @@
 
         <!-- Step 4: Interviews -->
         <div id="step-interview" class="step-content hidden">
-          <div class="card action-card">
+          <div class="card action-card full-width">
             <div class="card-header">
               <h3>📅 Interview Scheduler</h3>
               <p>Track scheduled interviews and confirmations.</p>
             </div>
-            <div class="calendar-placeholder">
-              <p><i>(Integration with Google Calendar)</i></p>
-              <button onclick="app.checkInterviewStatus()" class="btn btn-secondary">🔄 Refresh Status</button>
-              <div id="interview-status-output" class="output-area mt-3"></div>
+            <div class="calendar-placeholder full-width">
+              <button onclick="app.checkInterviewStatus()" class="btn btn-secondary" style="margin-bottom: 1.5rem;">🔄
+                Refresh Status</button>
+
+              <div class="table-responsive">
+                <table class="results-table">
+                  <thead>
+                    <tr>
+                      <th>Candidate</th>
+                      <th>Candidate Email</th>
+                      <th>Role</th>
+                      <th>JD Title</th>
+                      <th>Date</th>
+                      <th>Time</th>
+                      <th>Status</th>
+                      <th>Meeting Link</th>
+                      <th>Calendar Event</th>
+                      <th>Interviewer Email</th>
+                    </tr>
+                  </thead>
+                  <tbody id="interview-status-body">
+                    <tr>
+                      <td colspan="10" style="text-align:center;">Click Refresh to load interview status</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>

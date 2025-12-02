@@ -91,14 +91,54 @@ const app = {
   },
 
   checkInterviewStatus: async () => {
-    const output = document.getElementById('interview-status-output');
-    output.innerHTML = 'Checking status...';
+    const tbody = document.getElementById('interview-status-body');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Loading status...</td></tr>';
+
     try {
       const res = await fetch('/interviews/status');
       const data = await res.json();
-      output.innerHTML = `<div style="color: green">Status: ${JSON.stringify(data)}</div>`;
+
+      tbody.innerHTML = '';
+      if (!data.interviews || data.interviews.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">No interviews scheduled yet</td></tr>';
+        return;
+      }
+
+      data.interviews.forEach(interview => {
+        const statusClass = interview.status === 'confirmed' ? 'score-high' :
+          interview.status === 'pending' ? 'score-medium' : 'score-low';
+
+        const meetingLink = interview.event_link ? `<a href="${interview.event_link}" target="_blank">Join Meeting</a>` : 'Pending';
+        const calendarEvent = interview.event_link ? `<a href="${interview.event_link}" target="_blank">View Event</a>` : 'Pending';
+
+        // Format time if available
+        let timeDisplay = 'TBD';
+        if (interview.confirmed_time) {
+          timeDisplay = new Date(interview.confirmed_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } else if (interview.selected_slot) {
+          timeDisplay = interview.selected_slot;
+        }
+
+        const row = `
+          <tr>
+            <td><strong>${interview.candidate_name}</strong></td>
+            <td>${interview.candidate_email}</td>
+            <td>${interview.jd_title}</td>
+            <td>${interview.jd_title}</td>
+            <td>${new Date(interview.interview_date).toLocaleDateString()}</td>
+            <td>${timeDisplay}</td>
+            <td><span class="score-badge ${statusClass}">${interview.status}</span></td>
+            <td>${meetingLink}</td>
+            <td>${calendarEvent}</td>
+            <td>${interview.interviewer_email || 'N/A'}</td>
+          </tr>
+        `;
+        tbody.innerHTML += row;
+      });
+
     } catch (err) {
-      output.innerHTML = `<div style="color: red">Error: ${err.message}</div>`;
+      tbody.innerHTML = `<tr><td colspan="10" style="color: red; text-align:center;">Error: ${err.message}</td></tr>`;
     }
   },
 
@@ -118,10 +158,10 @@ const app = {
       }
 
       data.logs.forEach(log => {
-        const statusClass = log.acknowledgement === 'yes' ? 'score-high' :
-          log.acknowledgement === 'no' ? 'score-low' : 'score-medium';
-        const statusText = log.acknowledgement === 'yes' ? '✅ Interested' :
-          log.acknowledgement === 'no' ? '❌ Not Interested' : '⏳ Pending';
+        const statusClass = log.acknowledgement === 'interested' ? 'score-high' :
+          log.acknowledgement === 'not_interested' ? 'score-low' : 'score-medium';
+        const statusText = log.acknowledgement === 'interested' ? '✅ Interested' :
+          log.acknowledgement === 'not_interested' ? '❌ Not Interested' : '⏳ Pending';
 
         const row = `
           <tr>
