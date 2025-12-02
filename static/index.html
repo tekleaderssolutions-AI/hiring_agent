@@ -19,12 +19,12 @@
     <!-- Landing Page / Portal Selection -->
     <div id="landing-page">
       <div class="portal-selection">
-        <div class="card portal-card" onclick="app.showAdminPortal()">
+        <div class="card portal-card" onclick="window.location.href='/static/admin_login.html'">
           <div class="portal-icon">👨‍💼</div>
           <h2>Admin Portal</h2>
           <p>Build and manage your talent pool</p>
         </div>
-        <div class="card portal-card" onclick="app.showRecruiterPortal()">
+        <div class="card portal-card" onclick="window.location.href='/static/recruiter_login.html'">
           <div class="portal-icon">🎯</div>
           <h2>Recruiter Portal</h2>
           <p>Find and hire the best candidates</p>
@@ -34,7 +34,9 @@
 
     <!-- Admin Portal -->
     <div id="admin-portal" class="hidden">
-      <button onclick="app.showLanding()" class="back-btn">← Back to Home</button>
+      <div class="portal-header">
+        <button onclick="app.logout()" class="logout-btn">Logout</button>
+      </div>
 
       <div class="card action-card">
         <div class="card-header">
@@ -65,7 +67,9 @@
 
     <!-- Recruiter Portal -->
     <div id="recruiter-portal" class="hidden">
-      <button onclick="app.showLanding()" class="back-btn">← Back to Home</button>
+      <div class="portal-header">
+        <button onclick="app.logout()" class="logout-btn">Logout</button>
+      </div>
 
       <!-- Journey Map Visualization -->
       <div class="journey-map-container">
@@ -75,25 +79,21 @@
         </svg>
 
         <div class="steps-wrapper">
-          <!-- Step 1: Job Description -->
           <div class="step-node active" onclick="app.showStep('step-jd')" id="node-jd">
             <div class="step-icon">🎯</div>
             <div class="step-label">Define Role</div>
           </div>
 
-          <!-- Step 2: AI Analysis -->
           <div class="step-node" onclick="app.showStep('step-analysis')" id="node-analysis">
             <div class="step-icon">🧠</div>
             <div class="step-label">AI Matching</div>
           </div>
 
-          <!-- Step 3: Outreach -->
           <div class="step-node" onclick="app.showStep('step-outreach')" id="node-outreach">
             <div class="step-icon">📧</div>
             <div class="step-label">Outreach</div>
           </div>
 
-          <!-- Step 4: Interviews -->
           <div class="step-node" onclick="app.showStep('step-interview')" id="node-interview">
             <div class="step-icon">📅</div>
             <div class="step-label">Interviews</div>

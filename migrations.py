@@ -101,6 +101,24 @@ def init_db():
             ON candidate_outreach(candidate_email);
         """)
         
+        # 6. Create users table for authentication
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                role TEXT NOT NULL CHECK (role IN ('admin', 'recruiter')),
+                email TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+        """)
+        
+        # Create index on username for faster lookups
+        cur.execute("""
+            CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+        """)
+        
         # Add missing columns to interview_schedules if they don't exist
         cur.execute("""
             ALTER TABLE interview_schedules

@@ -1,4 +1,27 @@
 const app = {
+  // Check authentication on page load
+  checkAuth: async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const portal = urlParams.get('portal');
+
+    // If portal parameter exists, show that portal
+    if (portal === 'admin') {
+      const userRole = sessionStorage.getItem('user_role');
+      if (userRole === 'admin') {
+        app.showAdminPortal();
+      } else {
+        window.location.href = '/static/admin_login.html';
+      }
+    } else if (portal === 'recruiter') {
+      const userRole = sessionStorage.getItem('user_role');
+      if (userRole === 'recruiter') {
+        app.showRecruiterPortal();
+      } else {
+        window.location.href = '/static/recruiter_login.html';
+      }
+    }
+  },
+
   // Navigation Logic
   showLanding: () => {
     document.getElementById('landing-page').classList.remove('hidden');
@@ -18,6 +41,18 @@ const app = {
     document.getElementById('recruiter-portal').classList.remove('hidden');
     // Default to first step
     app.showStep('step-jd');
+  },
+
+  logout: async () => {
+    try {
+      await fetch('/auth/logout', { method: 'POST' });
+      sessionStorage.clear();
+      window.location.href = '/';
+    } catch (err) {
+      console.error('Logout error:', err);
+      sessionStorage.clear();
+      window.location.href = '/';
+    }
   },
 
   showStep: (stepId) => {
@@ -68,6 +103,9 @@ const app = {
   },
 
   init: () => {
+    // Check authentication on page load
+    app.checkAuth();
+
     // Helper to fetch rankings using JD embedding
     const fetchRankings = async (jdId, topK) => {
       const resultsArea = document.getElementById('results-area');

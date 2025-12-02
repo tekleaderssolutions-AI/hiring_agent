@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .auth_views import login_view, logout_view, check_auth
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -13,4 +14,8 @@ urlpatterns = [
     path('confirm-interview/<str:interview_id>', views.confirm_interview, name='confirm_interview'),
     path('schedule-interviews', views.schedule_interviews, name='schedule_interviews'),
     path('interviews/status', views.get_interviews_status, name='get_interviews_status'),
+    # Authentication endpoints
+    path('auth/login', login_view, name='login'),
+    path('auth/logout', logout_view, name='logout'),
+    path('auth/check', check_auth, name='check_auth'),
 ]
