@@ -586,3 +586,16 @@ label {
   font-size: 0.85rem !important;
   vertical-align: middle !important;
 }
+
+/* Fix for interview table layout */
+.table-responsive {
+  display: block !important;
+  width: 100% !important;
+  overflow-x: auto !important;
+}
+
+.results-table {
+  width: 100% !important;
+  min-width: 800px !important;
+  table-layout: auto !important;
+}
