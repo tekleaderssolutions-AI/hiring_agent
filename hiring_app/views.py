@@ -69,26 +69,39 @@ def analyze_jd_pdf(request):
 @require_POST
 def upload_resumes(request):
     try:
+        print("=== Resume Upload Started ===")
         files = request.FILES.getlist('files')
         source_url = request.POST.get('source_url')
+        
+        print(f"Received {len(files)} files")
+        
         if not files:
             return JsonResponse({'error': 'no files uploaded'}, status=400)
 
         results = []
-        for file in files:
+        for idx, file in enumerate(files):
             filename = file.name
+            print(f"Processing file {idx + 1}/{len(files)}: {filename}")
+            
             if not filename.lower().endswith('.pdf'):
                 results.append({'file_name': filename, 'status': 'skipped', 'reason': 'not a PDF'})
                 continue
             try:
+                print(f"  - Reading file contents...")
                 contents = file.read()
+                print(f"  - Extracting text from PDF...")
                 raw_text = _extract_pdf_text(contents).strip()
                 if not raw_text:
                     results.append({'file_name': filename, 'status': 'error', 'reason': 'no text extracted'})
                     continue
+                
+                print(f"  - Processing resume with AI (this may take 10-30 seconds)...")
                 processed = process_resume_text(raw_text=raw_text, source_url=source_url, file_name=filename)
                 resume_id = processed.get('resume_id')
                 parsed = processed.get('parsed', {})
+                
+                print(f"  - ✅ Successfully processed: {parsed.get('candidate_name', 'Unknown')}")
+                
                 results.append({
                     'file_name': filename,
                     'status': 'ok',
@@ -98,16 +111,20 @@ def upload_resumes(request):
                 })
             except Exception as e:
                 import traceback
-                print(f"Error processing file {filename}: {str(e)}")
+                error_msg = str(e)
+                print(f"  - ❌ Error processing file {filename}: {error_msg}")
                 print(traceback.format_exc())
-                results.append({'file_name': filename, 'status': 'error', 'reason': str(e)})
+                results.append({'file_name': filename, 'status': 'error', 'reason': error_msg})
 
+        print(f"=== Resume Upload Completed: {len(results)} files processed ===")
         return JsonResponse({'count': len(results), 'items': results})
+        
     except Exception as e:
         import traceback
-        print(f"Critical error in upload_resumes: {str(e)}")
+        error_msg = str(e)
+        print(f"❌ CRITICAL ERROR in upload_resumes: {error_msg}")
         print(traceback.format_exc())
-        return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
+        return JsonResponse({'error': f'Server error: {error_msg}'}, status=500)
 
 
 @csrf_exempt
