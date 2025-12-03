@@ -85,6 +85,7 @@ def fix_vector_dimensions():
                 resume_id UUID REFERENCES resumes(id),
                 jd_id UUID REFERENCES memories(id),
                 outreach_id UUID REFERENCES candidate_outreach(id),
+                created_by UUID REFERENCES users(id),
                 interview_date DATE NOT NULL,
                 proposed_slots JSONB,
                 selected_slot VARCHAR(10),

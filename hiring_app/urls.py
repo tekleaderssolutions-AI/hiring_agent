@@ -15,6 +15,7 @@ urlpatterns = [
     path('confirm-interview/<str:interview_id>', views.confirm_interview, name='confirm_interview'),
     path('schedule-interviews', views.schedule_interviews, name='schedule_interviews'),
     path('interviews/status', views.get_interviews_status, name='get_interviews_status'),
+    path('interviews/download-csv', views.download_interviews_csv, name='download_interviews_csv'),
     # Authentication endpoints
     path('auth/login', login_view, name='login'),
     path('auth/register', register_view, name='register'),

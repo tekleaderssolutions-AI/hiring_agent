@@ -611,10 +611,12 @@ def get_interviews_status(request):
                     r.email,
                     m.title as jd_title,
                     i.event_link,
-                    i.event_id
+                    i.event_id,
+                    u.username as owner
                 FROM interview_schedules i
                 JOIN resumes r ON r.id = i.resume_id
                 JOIN memories m ON m.id = i.jd_id
+                LEFT JOIN users u ON u.id = i.created_by
                 WHERE i.jd_id = %s
                 ORDER BY i.interview_date DESC, i.created_at DESC
             """
@@ -631,10 +633,12 @@ def get_interviews_status(request):
                     r.email,
                     m.title as jd_title,
                     i.event_link,
-                    i.event_id
+                    i.event_id,
+                    u.username as owner
                 FROM interview_schedules i
                 JOIN resumes r ON r.id = i.resume_id
                 JOIN memories m ON m.id = i.jd_id
+                LEFT JOIN users u ON u.id = i.created_by
                 ORDER BY i.interview_date DESC, i.created_at DESC
             """
             cur.execute(query)
@@ -657,6 +661,7 @@ def get_interviews_status(request):
                 "jd_title": row[7],
                 "event_link": row[8],
                 "event_id": row[9],
+                "owner": row[10] or "Unknown",
                 "interviewer_email": INTERVIEWER_EMAIL
             })
         
@@ -667,5 +672,90 @@ def get_interviews_status(request):
         
     except Exception as e:
         return JsonResponse({'error': f"Error fetching interviews: {str(e)}"}, status=500)
+    finally:
+        conn.close()
+
+
+@csrf_exempt
+def download_interviews_csv(request):
+    """Download interviews as CSV with specified column order"""
+    from db import get_connection
+    import csv
+    from io import StringIO
+    
+    conn = get_connection()
+    
+    try:
+        cur = conn.cursor()
+        
+        query = """
+            SELECT 
+                r.candidate_name,
+                u.username as owner,
+                r.email as candidate_email,
+                m.canonical_json->>'role' as role,
+                m.title as jd_title,
+                i.interview_date,
+                i.confirmed_slot_time,
+                i.status,
+                i.event_link,
+                i.event_link as calendar_event,
+                %s as interviewer_email
+            FROM interview_schedules i
+            JOIN resumes r ON r.id = i.resume_id
+            JOIN memories m ON m.id = i.jd_id
+            LEFT JOIN users u ON u.id = i.created_by
+            ORDER BY i.interview_date DESC, i.created_at DESC
+        """
+        
+        from config import INTERVIEWER_EMAIL
+        cur.execute(query, [INTERVIEWER_EMAIL])
+        
+        rows = cur.fetchall()
+        cur.close()
+        
+        # Create CSV in memory
+        output = StringIO()
+        writer = csv.writer(output)
+        
+        # Write header in specified order
+        writer.writerow([
+            'Candidate',
+            'Owner',
+            'Candidate Email',
+            'Role',
+            'JD Title',
+            'Date',
+            'Time',
+            'Status',
+            'Meeting Link',
+            'Calendar Event',
+            'Interviewer Email'
+        ])
+        
+        # Write data rows
+        for row in rows:
+            writer.writerow([
+                row[0] or '',  # Candidate
+                row[1] or 'Unknown',  # Owner
+                row[2] or '',  # Candidate Email
+                row[3] or '',  # Role
+                row[4] or '',  # JD Title
+                str(row[5]) if row[5] else '',  # Date
+                str(row[6]) if row[6] else '',  # Time
+                row[7] or 'pending',  # Status
+                row[8] or '',  # Meeting Link
+                row[9] or '',  # Calendar Event
+                row[10] or ''  # Interviewer Email
+            ])
+        
+        # Create HTTP response with CSV
+        response = HttpResponse(output.getvalue(), content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="interviews.csv"'
+        
+        return response
+        
+    except Exception as e:
+        return JsonResponse({'error': f"Error generating CSV: {str(e)}"}, status=500)
     finally:
         conn.close()
