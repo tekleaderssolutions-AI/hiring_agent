@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Recruiter Registration - Recruitment Adventure</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-icon">📝</div>
+                <h1>Create Account</h1>
+                <p>Join as a Recruiter</p>
+            </div>
+
+            <form id="register-form" class="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required class="form-control"
+                        placeholder="Choose a username">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required class="form-control"
+                        placeholder="Enter your email">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required class="form-control"
+                        placeholder="Choose a password">
+                </div>
+
+                <div id="error-message" class="error-message hidden"></div>
+                <div id="success-message" class="error-message hidden" style="background: #d1fae5; color: #065f46;">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
+            </form>
+
+            <div class="login-footer">
+                <p>Already have an account? <a href="/static/recruiter_login.html" class="back-link">Login here</a></p>
+                <a href="/" class="back-link">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error-message');
+            const successDiv = document.getElementById('success-message');
+
+            errorDiv.classList.add('hidden');
+            successDiv.classList.add('hidden');
+
+            try {
+                const res = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, email, role: 'recruiter' })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    successDiv.textContent = 'Account created successfully! Redirecting to login...';
+                    successDiv.classList.remove('hidden');
+                    setTimeout(() => {
+                        window.location.href = '/static/recruiter_login.html';
+                    }, 1500);
+                } else {
+                    errorDiv.textContent = data.message || 'Registration failed';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Registration failed. Please try again.';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>

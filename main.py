@@ -7,6 +7,7 @@ from typing import Optional, List, Dict, Any
 import pdfplumber
 from io import BytesIO
 import hashlib
+import psycopg2
 
 from jd_agent import analyze_job_description
 from ranker_agent import get_top_matches_for_role
@@ -105,6 +106,53 @@ async def login(request: Request):
             })
         else:
             return JSONResponse({'success': False, 'message': 'Invalid credentials'}, status_code=401)
+            
+    except Exception as e:
+        return JSONResponse({'success': False, 'message': str(e)}, status_code=500)
+
+@app.post("/auth/register")
+async def register(request: Request):
+    """Handle user registration"""
+    try:
+        data = await request.json()
+        username = data.get('username')
+        password = data.get('password')
+        email = data.get('email')
+        role = data.get('role', 'recruiter')
+        
+        if not username or not password or not email:
+            return JSONResponse({'success': False, 'message': 'Missing required fields'}, status_code=400)
+            
+        if role not in ['admin', 'recruiter']:
+            return JSONResponse({'success': False, 'message': 'Invalid role'}, status_code=400)
+            
+        # Hash password
+        password_hash = hash_password(password)
+        
+        conn = get_connection()
+        cur = conn.cursor()
+        
+        try:
+            cur.execute("""
+                INSERT INTO users (username, password_hash, role, email)
+                VALUES (%s, %s, %s, %s)
+                RETURNING id
+            """, (username, password_hash, role, email))
+            
+            user_id = cur.fetchone()
+            conn.commit()
+            
+            return JSONResponse({'success': True, 'message': 'User created successfully'})
+            
+        except psycopg2.errors.UniqueViolation:
+            conn.rollback()
+            return JSONResponse({'success': False, 'message': 'Username already exists'}, status_code=400)
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            cur.close()
+            conn.close()
             
     except Exception as e:
         return JSONResponse({'success': False, 'message': str(e)}, status_code=500)

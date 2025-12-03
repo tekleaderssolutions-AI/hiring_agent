@@ -1,46 +1,65 @@
 """
-Script to create initial admin and recruiter users
+Script to create initial admin and recruiter users, or custom users via CLI.
+Usage:
+    python create_users.py
+    python create_users.py --username myadmin --password mypass --role admin --email admin@example.com
 """
 import psycopg2
 import hashlib
+import argparse
+import sys
 from db import get_connection
 
 def hash_password(password):
     """Simple password hashing using SHA-256"""
     return hashlib.sha256(password.encode()).hexdigest()
 
-def create_default_users():
+def create_user(username, password, role, email):
     conn = get_connection()
     try:
         cur = conn.cursor()
+        password_hash = hash_password(password)
         
-        # Create default admin user
-        admin_password = hash_password("admin123")
         cur.execute("""
             INSERT INTO users (username, password_hash, role, email)
             VALUES (%s, %s, %s, %s)
             ON CONFLICT (username) DO NOTHING
-        """, ("admin", admin_password, "admin", "admin@company.com"))
+            RETURNING id
+        """, (username, password_hash, role, email))
         
-        # Create default recruiter user
-        recruiter_password = hash_password("recruiter123")
-        cur.execute("""
-            INSERT INTO users (username, password_hash, role, email)
-            VALUES (%s, %s, %s, %s)
-            ON CONFLICT (username) DO NOTHING
-        """, ("recruiter", recruiter_password, "recruiter", "recruiter@company.com"))
-        
+        user_id = cur.fetchone()
         conn.commit()
-        print("Default users created successfully!")
-        print("Admin credentials: username=admin, password=admin123")
-        print("Recruiter credentials: username=recruiter, password=recruiter123")
         
+        if user_id:
+            print(f"User '{username}' created successfully with role '{role}'.")
+        else:
+            print(f"User '{username}' already exists.")
+            
     except Exception as e:
-        print(f"Error creating users: {e}")
+        print(f"Error creating user: {e}")
         conn.rollback()
     finally:
         cur.close()
         conn.close()
 
+def create_default_users():
+    print("Creating default users...")
+    create_user("admin", "admin123", "admin", "admin@company.com")
+    create_user("recruiter", "recruiter123", "recruiter", "recruiter@company.com")
+
 if __name__ == "__main__":
-    create_default_users()
+    parser = argparse.ArgumentParser(description='Create users for the Hiring Agent app')
+    parser.add_argument('--username', help='Username for the new user')
+    parser.add_argument('--password', help='Password for the new user')
+    parser.add_argument('--role', choices=['admin', 'recruiter'], help='Role (admin or recruiter)')
+    parser.add_argument('--email', help='Email address')
+    
+    args = parser.parse_args()
+    
+    if args.username and args.password and args.role:
+        email = args.email or f"{args.username}@example.com"
+        create_user(args.username, args.password, args.role, email)
+    else:
+        # If no args provided, create defaults
+        create_default_users()
+
