@@ -68,37 +68,46 @@ def analyze_jd_pdf(request):
 @csrf_exempt
 @require_POST
 def upload_resumes(request):
-    files = request.FILES.getlist('files')
-    source_url = request.POST.get('source_url')
-    if not files:
-        return JsonResponse({'error': 'no files uploaded'}, status=400)
+    try:
+        files = request.FILES.getlist('files')
+        source_url = request.POST.get('source_url')
+        if not files:
+            return JsonResponse({'error': 'no files uploaded'}, status=400)
 
-    results = []
-    for file in files:
-        filename = file.name
-        if not filename.lower().endswith('.pdf'):
-            results.append({'file_name': filename, 'status': 'skipped', 'reason': 'not a PDF'})
-            continue
-        try:
-            contents = file.read()
-            raw_text = _extract_pdf_text(contents).strip()
-            if not raw_text:
-                results.append({'file_name': filename, 'status': 'error', 'reason': 'no text extracted'})
+        results = []
+        for file in files:
+            filename = file.name
+            if not filename.lower().endswith('.pdf'):
+                results.append({'file_name': filename, 'status': 'skipped', 'reason': 'not a PDF'})
                 continue
-            processed = process_resume_text(raw_text=raw_text, source_url=source_url, file_name=filename)
-            resume_id = processed.get('resume_id')
-            parsed = processed.get('parsed', {})
-            results.append({
-                'file_name': filename,
-                'status': 'ok',
-                'resume_id': resume_id,
-                'candidate_name': parsed.get('candidate_name'),
-                'current_title': parsed.get('current_title'),
-            })
-        except Exception as e:
-            results.append({'file_name': filename, 'status': 'error', 'reason': str(e)})
+            try:
+                contents = file.read()
+                raw_text = _extract_pdf_text(contents).strip()
+                if not raw_text:
+                    results.append({'file_name': filename, 'status': 'error', 'reason': 'no text extracted'})
+                    continue
+                processed = process_resume_text(raw_text=raw_text, source_url=source_url, file_name=filename)
+                resume_id = processed.get('resume_id')
+                parsed = processed.get('parsed', {})
+                results.append({
+                    'file_name': filename,
+                    'status': 'ok',
+                    'resume_id': resume_id,
+                    'candidate_name': parsed.get('candidate_name'),
+                    'current_title': parsed.get('current_title'),
+                })
+            except Exception as e:
+                import traceback
+                print(f"Error processing file {filename}: {str(e)}")
+                print(traceback.format_exc())
+                results.append({'file_name': filename, 'status': 'error', 'reason': str(e)})
 
-    return JsonResponse({'count': len(results), 'items': results})
+        return JsonResponse({'count': len(results), 'items': results})
+    except Exception as e:
+        import traceback
+        print(f"Critical error in upload_resumes: {str(e)}")
+        print(traceback.format_exc())
+        return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
 
 
 @csrf_exempt
