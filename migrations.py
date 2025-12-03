@@ -118,6 +118,27 @@ def init_db():
         cur.execute("""
             CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
         """)
+
+        # 7. Seed default users if they don't exist
+        import hashlib
+        def hash_password(password):
+            return hashlib.sha256(password.encode()).hexdigest()
+
+        # Default Admin
+        admin_password = hash_password("admin123")
+        cur.execute("""
+            INSERT INTO users (username, password_hash, role, email)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (username) DO NOTHING
+        """, ("admin", admin_password, "admin", "admin@company.com"))
+
+        # Default Recruiter
+        recruiter_password = hash_password("recruiter123")
+        cur.execute("""
+            INSERT INTO users (username, password_hash, role, email)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (username) DO NOTHING
+        """, ("recruiter", recruiter_password, "recruiter", "recruiter@company.com"))
         
         # Add missing columns to interview_schedules if they don't exist
         cur.execute("""

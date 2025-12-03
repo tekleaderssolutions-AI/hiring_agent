@@ -1,59 +1,13 @@
 from django.core.management.base import BaseCommand
-from db import db_cursor
-
-
-INIT_SQL = '''
-CREATE EXTENSION IF NOT EXISTS vector;
-
-CREATE TABLE IF NOT EXISTS memories (
-  id UUID PRIMARY KEY,
-  type TEXT NOT NULL,
-  title TEXT,
-  text TEXT,
-  embedding vector(1536),
-  metadata JSONB,
-  canonical_json JSONB,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_memories_embedding ON memories USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
-
-CREATE TABLE IF NOT EXISTS resumes (
-  id UUID PRIMARY KEY,
-  candidate_name TEXT,
-  email TEXT,
-  phone TEXT,
-  type TEXT NOT NULL,
-  title TEXT,
-  text TEXT,
-  embedding vector(1536),
-  metadata JSONB,
-  canonical_json JSONB,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_resumes_embedding ON resumes USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
-
-CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  username TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('admin', 'recruiter')),
-  email TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
-'''
-
+import migrations
 
 class Command(BaseCommand):
-    help = 'Initialize Postgres vector extension and create memories/resumes tables (idempotent)'
+    help = 'Initialize the database with tables and default users'
 
     def handle(self, *args, **options):
-        with db_cursor() as cur:
-            cur.execute(INIT_SQL)
-        self.stdout.write(self.style.SUCCESS('DB initialized (vector extension, tables, indexes).'))
+        self.stdout.write('Initializing database...')
+        try:
+            migrations.init_db()
+            self.stdout.write(self.style.SUCCESS('Database initialized successfully'))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f'Error initializing database: {e}'))
